@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -55,15 +55,7 @@ class _HomePageState extends State<HomePage> {
           ),
           TextButton(
               onPressed: () async {
-                // await _todoRef.add({
-                //   "title":_titleController.text,
-                //   "description":_descriptionController.text,
-                //   "status":false,
-                //   "userid":_auth.currentUser!.uid,
-
-                // });
-
-                await _todoRef.add({
+               await _todoRef.add({
                   "title": _titleController.text,
                   "description": _descriptionController.text,
                   "status": false,
@@ -76,25 +68,55 @@ class _HomePageState extends State<HomePage> {
                 _descriptionController.clear();
               },
               child: Text("Add")),
+
+
+
           Expanded(
             child: StreamBuilder<QuerySnapshot>(
               stream: _todoRef
-                  .where("userid", isEqualTo: _auth.currentUser!.uid)
+                  .where('userid', isEqualTo: _auth.currentUser!.uid) // Query the tasks by user ID
                   .snapshots(),
-              builder: (BuildContext context,AsyncSnapshot<QuerySnapshot> snapshot) {
-                if (!snapshot.hasData){
+              builder: (BuildContext context,
+                  AsyncSnapshot<QuerySnapshot> snapshot) {
+                if (!snapshot.hasData) {
                   return Center(child: CircularProgressIndicator());
                 }
-                final List<DocumentSnapshot> documents=snapshot.data!.docs;
+
+                final List<DocumentSnapshot> documents = snapshot.data!.docs;
+
                 return ListView.builder(
                   itemCount: documents.length,
-                  itemBuilder:(BuildContext context, index) {
-                    
-                  }, 
-                  );
+                  itemBuilder: (BuildContext context, int index) {
+                    final document = documents[index];
+                   
+                    return ListTile(
+                      title: Text(document['title'] as String),
+                      subtitle: Text(document['description'] as String),
+                      // trailing: Checkbox(
+                      //   value: document['completed'],
+                      //   onChanged: (bool? value) async {
+                      //     if (value != null) {
+                      //       // Update the document
+                      //       final docRef = _todoRef.doc(document.id);
+                      //       await docRef.update({
+                      //         'completed': value,
+                      //       });
+                      //     }
+                      //   },
+                      // ),
+                      onLongPress: () async {
+                        // Delete the document
+                        final docRef = _todoRef.doc(document.id);
+                        await docRef.delete();
+                      },
+                    );
+                  },
+                );
               },
             ),
           ),
+
+
         ],
       ),
     );
