@@ -25,6 +25,11 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        automaticallyImplyLeading: false,
+        backgroundColor: Colors.blueGrey,
+        title: Text("Todo",style: TextStyle(fontSize: 20),),
+      ),
       body: Column(
         children: [
           SizedBox(
@@ -55,10 +60,11 @@ class _HomePageState extends State<HomePage> {
           ),
           TextButton(
               onPressed: () async {
+                final time=DateTime.now();
                await _todoRef.add({
                   "title": _titleController.text,
                   "description": _descriptionController.text,
-                  "status": false,
+                  "time": time,
                   "userid": _auth.currentUser!.uid,
                 });
                 ScaffoldMessenger.of(context)
@@ -88,22 +94,58 @@ class _HomePageState extends State<HomePage> {
                   itemCount: documents.length,
                   itemBuilder: (BuildContext context, int index) {
                     final document = documents[index];
+                    
                    
                     return ListTile(
                       title: Text(document['title'] as String),
                       subtitle: Text(document['description'] as String),
-                      // trailing: Checkbox(
-                      //   value: document['completed'],
-                      //   onChanged: (bool? value) async {
-                      //     if (value != null) {
-                      //       // Update the document
-                      //       final docRef = _todoRef.doc(document.id);
-                      //       await docRef.update({
-                      //         'completed': value,
-                      //       });
-                      //     }
-                      //   },
-                      // ),
+                     trailing: IconButton(onPressed:() {
+                       showDialog(context: context, builder: (BuildContext context) {
+                        final document1=documents[index];
+                        return AlertDialog(
+                          title: Text("edit task"),
+                          content: Column(
+                            children: [
+                              TextField(
+                                controller: _titleController,
+                                decoration: InputDecoration(
+                                  hintText: "title",
+                                  
+                                ),
+                              ),
+                               TextField(
+                                controller: _descriptionController,
+                                decoration: InputDecoration(
+                                  hintText: "description",
+                                  
+                                ),
+                              ),
+                              Row(mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  TextButton(onPressed: () {
+                                    FirebaseFirestore.instance.collection("todo task").doc(document.id).update(
+                                      {"title":_titleController.text,
+                                      "description":_descriptionController.text
+                                      }
+                                    );
+                                    _titleController.clear();
+                                    _descriptionController.clear();
+                                    Navigator.pop(context);
+                                  }, child: Text("save",style: TextStyle(fontSize: 20),)),
+                                  TextButton(onPressed: () {
+                                    Navigator.pop(context);
+                                  }, child: Text("cancel",style: TextStyle(fontSize: 20),)),
+                                ],
+                              )
+                            ],
+                          ),
+                        );
+                         
+                       },);
+
+                     }, 
+                      icon: Icon(Icons.edit)),
+
                       onLongPress: () async {
                         // Delete the document
                         final docRef = _todoRef.doc(document.id);
