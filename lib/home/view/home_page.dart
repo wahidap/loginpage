@@ -1,6 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
+import 'package:my_app/login/login.dart';
+import 'package:my_app/myproduct/view/item_page.dart';
+import 'package:my_app/profile/product.dart';
+
 
 class HomePage extends StatefulWidget {
   
@@ -12,14 +17,22 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   final TextEditingController _titleController = TextEditingController();
   final TextEditingController _descriptionController = TextEditingController();
+ 
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
   late CollectionReference _todoRef;
+  late FirebaseStorage _storage;
+
+  // Future <void> getImage()async {
+  //   final imagePicker=ImagePicker();
+  //   images=await imagePicker.pickMultiImage();
+  // }
 
   @override
   void initState() {
     super.initState();
     _todoRef = _firestore.collection("todo task");
+    _storage = FirebaseStorage.instance;
   }
 
   @override
@@ -29,6 +42,19 @@ class _HomePageState extends State<HomePage> {
         automaticallyImplyLeading: false,
         backgroundColor: Colors.blueGrey,
         title: Text("Todo",style: TextStyle(fontSize: 20),),
+        actions: [
+           IconButton(onPressed: () {
+            Navigator.push(context,MaterialPageRoute(builder:(context)=>MyProducts() ));
+          }, icon: Icon(Icons.person)),
+          
+          IconButton(onPressed: () {
+            Navigator.push(context,MaterialPageRoute(builder:(context)=>Product() ));
+          }, icon: Icon(Icons.shop)),
+           IconButton(onPressed: () {
+            Navigator.push(context,MaterialPageRoute(builder:(context)=>loginPage() ));
+          }, icon: Icon(Icons.logout)),
+        ],
+
       ),
       body: Column(
         children: [
@@ -58,6 +84,16 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
           ),
+
+
+          // SizedBox(height: 50,
+          //   child: TextButton(onPressed: () {
+          //     getImage();
+              
+          //   }, child: Text("IMAGE")),
+
+
+          // ),
           TextButton(
               onPressed: () async {
                 final time=DateTime.now();
@@ -65,7 +101,8 @@ class _HomePageState extends State<HomePage> {
                   "title": _titleController.text,
                   "description": _descriptionController.text,
                   "time": time,
-                  "userid": _auth.currentUser!.uid,
+                "userid": _auth.currentUser!.uid,
+               
                 });
                 ScaffoldMessenger.of(context)
                     .showSnackBar(SnackBar(content: Text("Task added")));
